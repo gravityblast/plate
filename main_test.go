@@ -48,12 +48,15 @@ func TestPlate_OpenTemplate_template_not_found(t *testing.T) {
 func TestPlate_Execute(t *testing.T) {
 	defer os.RemoveAll("__test-data__")
 	p := newPlate("__test-fixtures__", "__test-data__")
-	p.execute("go")
+	p.execute("go", []string{"program-name", "outpath", "World"}...)
 
 	paths := map[string]string{
 		"__test-data__/main.go": `package main
 
+import "fmt"
+
 func main() {
+	fmt.Println("Hello World")
 }`,
 		"__test-data__/main_test.go": `package main
 

@@ -1,7 +1,10 @@
 {{define "main.go"}}
 package main
 
+import "fmt"
+
 func main() {
+	fmt.Println("Hello {{ args 2 }}")
 }
 {{end}}
 

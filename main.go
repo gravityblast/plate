@@ -41,8 +41,27 @@ func (p *plate) buildOutPath(filepath string) string {
 	return path.Join(p.outPath, filepath)
 }
 
-func (p *plate) openTemplate(name string) (*template.Template, error) {
+func (p *plate) templateFuncs(args ...string) template.FuncMap {
+	return template.FuncMap{
+		"args": func(i int) string {
+			if i >= len(args) {
+				fmt.Printf("The current template requires Args[%d].\n", i)
+				fmt.Printf("Current Args are:\n")
+				for index, arg := range args {
+					fmt.Printf("  %d: %s\n", index, arg)
+				}
+				os.Exit(1)
+			}
+
+			return args[i]
+		},
+	}
+}
+
+func (p *plate) openTemplate(name string, args ...string) (*template.Template, error) {
 	t := template.New("")
+	t.Funcs(p.templateFuncs(args...))
+
 	f, err := os.Open(p.buildTemplatePath(name))
 	if err != nil {
 		return t, err
@@ -78,8 +97,8 @@ func (p *plate) availableTemplates() []string {
 	return names
 }
 
-func (p *plate) execute(name string) error {
-	t, err := p.openTemplate(name)
+func (p *plate) execute(name string, args ...string) error {
+	t, err := p.openTemplate(name, args...)
 	if err != nil {
 		return err
 	}
@@ -100,7 +119,11 @@ func (p *plate) execute(name string) error {
 			}
 
 			buf := bytes.NewBuffer([]byte{})
-			tpl.Execute(buf, nil)
+			err = tpl.Execute(buf, nil)
+			if err != nil {
+				return err
+			}
+
 			tplContent := strings.TrimSpace(buf.String())
 			io.WriteString(f, tplContent)
 		}
@@ -143,12 +166,15 @@ func main() {
 
 	args := os.Args
 
-	if len(args) != 2 {
+	if len(args) < 2 {
 		fmt.Printf("Usage:\n  %s PROJECT_PATH\n", args[0])
 		os.Exit(1)
 	}
 
 	p := newPlate(templatesPath, args[1])
 	name := chooseTemplate(p)
-	p.execute(name)
+	err = p.execute(name, args...)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
