@@ -45,7 +45,20 @@ func (p *plate) buildOutPath(filepath string) string {
 	return path.Join(p.outPath, filepath)
 }
 
+func (p *plate) ask(name string) string {
+	var val string
+	fmt.Printf("> %s: ", name)
+	fmt.Scanf("%s", &val)
+	if val == "" {
+		return p.ask(name)
+	}
+
+	return val
+}
+
 func (p *plate) templateFuncs(args ...string) template.FuncMap {
+	vars := make(map[string]string)
+
 	return template.FuncMap{
 		"args": func(i int) string {
 			if i >= len(args) {
@@ -58,6 +71,17 @@ func (p *plate) templateFuncs(args ...string) template.FuncMap {
 			}
 
 			return args[i]
+		},
+
+		"var": func(name string) string {
+			if val, ok := vars[name]; ok {
+				return val
+			}
+
+			val := p.ask(name)
+			vars[name] = val
+
+			return val
 		},
 	}
 }
