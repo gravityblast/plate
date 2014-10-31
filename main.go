@@ -141,6 +141,7 @@ func (p *plate) execute(name string, args ...string) error {
 				return err
 			}
 
+			fmt.Printf("Creating file %s\n", path)
 			f, err := os.Create(path)
 			if err != nil {
 				return err
