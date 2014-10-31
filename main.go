@@ -17,7 +17,7 @@ import (
 
 const (
 	templatesExtension = ".tpl"
-	templatesFolder    = ".plate"
+	templatesFolder    = ".plates"
 )
 
 type plate struct {
@@ -30,6 +30,10 @@ func newPlate(srcPath, outPath string) *plate {
 		srcPath: srcPath,
 		outPath: outPath,
 	}
+}
+
+func (p *plate) setup() {
+	os.MkdirAll(p.srcPath, 0777)
 }
 
 func (p *plate) buildTemplatePath(name string) string {
@@ -134,6 +138,9 @@ func (p *plate) execute(name string, args ...string) error {
 
 func chooseTemplate(p *plate) string {
 	templates := p.availableTemplates()
+	if len(templates) < 1 {
+		log.Fatalf("No templates available in %s", p.srcPath)
+	}
 	fmt.Printf("Available templates:\n\n")
 	for i, path := range templates {
 		fmt.Printf("  %d - %v\n", i+1, path)
@@ -172,6 +179,7 @@ func main() {
 	}
 
 	p := newPlate(templatesPath, args[1])
+	p.setup()
 	name := chooseTemplate(p)
 	err = p.execute(name, args...)
 	if err != nil {
