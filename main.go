@@ -2,17 +2,23 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
+	"os/user"
 	"path"
 	"path/filepath"
 	"strings"
 	"text/template"
 )
 
-const templatesExtension = ".tpl"
+const (
+	templatesExtension = ".tpl"
+	templatesFolder    = ".plate"
+)
 
 type plate struct {
 	srcPath string
@@ -83,4 +89,27 @@ func (p *plate) execute(name string) error {
 }
 
 func main() {
+	var tplName string
+
+	flag.StringVar(&tplName, "t", "", "template name")
+	flag.Parse()
+
+	fmt.Printf(" --- %v\n", tplName)
+
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	templatesPath := path.Join(usr.HomeDir, templatesFolder)
+
+	args := os.Args
+
+	fmt.Printf("%v", args)
+
+	p := newPlate(templatesPath, args[1])
+	err = p.execute(tplName)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

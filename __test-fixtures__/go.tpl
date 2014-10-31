@@ -8,7 +8,7 @@ func main() {
 {{define "main_test.go"}}
 package main
 
-import "test"
+import "testing"
 
 func TestFoo(t *testing.T) {
 }
