@@ -57,6 +57,27 @@ func (p *plate) openTemplate(name string) (*template.Template, error) {
 	return t.Parse(string(content))
 }
 
+func (p *plate) availableTemplates() []string {
+	pattern := path.Join(p.srcPath, fmt.Sprintf("*%s", templatesExtension))
+	paths, err := filepath.Glob(pattern)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var names []string
+
+	for _, path := range paths {
+		name, err := filepath.Rel(p.srcPath, path)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		names = append(names, name[0:len(name)-len(templatesExtension)])
+	}
+
+	return names
+}
+
 func (p *plate) execute(name string) error {
 	t, err := p.openTemplate(name)
 	if err != nil {
@@ -88,13 +109,30 @@ func (p *plate) execute(name string) error {
 	return nil
 }
 
+func chooseTemplate(p *plate) string {
+	templates := p.availableTemplates()
+	fmt.Printf("Available templates:\n\n")
+	for i, path := range templates {
+		fmt.Printf("  %d - %v\n", i+1, path)
+	}
+
+	fmt.Printf("\nChoose your template [1-%d]: ", len(templates))
+
+	var i int
+	fmt.Scanf("%d", &i)
+
+	if i < 1 || i > len(templates) {
+		return chooseTemplate(p)
+	}
+
+	return templates[i-1]
+}
+
 func main() {
 	var tplName string
 
 	flag.StringVar(&tplName, "t", "", "template name")
 	flag.Parse()
-
-	fmt.Printf(" --- %v\n", tplName)
 
 	usr, err := user.Current()
 	if err != nil {
@@ -105,11 +143,12 @@ func main() {
 
 	args := os.Args
 
-	fmt.Printf("%v", args)
+	if len(args) != 2 {
+		fmt.Printf("Usage:\n  %s PROJECT_PATH\n", args[0])
+		os.Exit(1)
+	}
 
 	p := newPlate(templatesPath, args[1])
-	err = p.execute(tplName)
-	if err != nil {
-		log.Fatal(err)
-	}
+	name := chooseTemplate(p)
+	p.execute(name)
 }
