@@ -57,7 +57,7 @@ func main() {
 }`,
 		"__test-data__/main_test.go": `package main
 
-import "test"
+import "testing"
 
 func TestFoo(t *testing.T) {
 }`,
