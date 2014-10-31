@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
@@ -46,9 +47,16 @@ func (p *plate) buildOutPath(filepath string) string {
 }
 
 func (p *plate) ask(name string) string {
-	var val string
 	fmt.Printf("> %s: ", name)
-	fmt.Scanf("%s", &val)
+
+	r := bufio.NewReader(os.Stdin)
+	val, err := r.ReadString('\n')
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	val = strings.TrimSpace(val)
+
 	if val == "" {
 		return p.ask(name)
 	}
@@ -73,7 +81,7 @@ func (p *plate) templateFuncs(args ...string) template.FuncMap {
 			return args[i]
 		},
 
-		"var": func(name string) string {
+		"ask": func(name string) string {
 			if val, ok := vars[name]; ok {
 				return val
 			}
@@ -166,6 +174,7 @@ func chooseTemplate(p *plate) string {
 	if len(templates) < 1 {
 		log.Fatalf("No templates available in %s", p.srcPath)
 	}
+
 	fmt.Printf("Available templates:\n\n")
 	for i, path := range templates {
 		fmt.Printf("  %d - %v\n", i+1, path)
