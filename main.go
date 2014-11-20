@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	templatesExtension = ".tpl"
+	templatesExtension = ".plate"
 	templatesFolder    = ".plates"
 )
 

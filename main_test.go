@@ -21,7 +21,7 @@ func TestNewPlate(t *testing.T) {
 
 func TestPlate_BuildTemplatePath(t *testing.T) {
 	p := newPlate("foo", "bar")
-	assert.Equal(t, "foo/go.tpl", p.buildTemplatePath("go"))
+	assert.Equal(t, "foo/go.plate", p.buildTemplatePath("go"))
 }
 
 func TestPlate_BuildOutPath(t *testing.T) {
