@@ -26,6 +26,11 @@ var log = logger{
 	logger:  logPkg.New(os.Stderr, "", 0),
 }
 
+type logger struct {
+	verbose bool
+	logger  *logPkg.Logger
+}
+
 func (l logger) Printf(f string, v ...interface{}) {
 	if l.verbose {
 		l.logger.Printf(f, v...)
@@ -34,11 +39,6 @@ func (l logger) Printf(f string, v ...interface{}) {
 
 func (l logger) Fatalf(f string, v ...interface{}) {
 	l.logger.Fatalf(f, v...)
-}
-
-type logger struct {
-	verbose bool
-	logger  *logPkg.Logger
 }
 
 type plate struct {
