@@ -2,12 +2,16 @@ package main
 
 import (
 	"io/ioutil"
-	"log"
+	logPkg "log"
 	"os"
 	"testing"
 
 	assert "github.com/pilu/miniassert"
 )
+
+func init() {
+	log.verbose = false
+}
 
 func TestNewPlate(t *testing.T) {
 	p := newPlate("foo", "bar")
@@ -73,7 +77,7 @@ func TestFoo(t *testing.T) {
 
 		content, err := ioutil.ReadAll(f)
 		if err != nil {
-			log.Fatal(err)
+			logPkg.Fatal(err)
 		}
 		assert.Equal(t, expectedContent, string(content))
 	}

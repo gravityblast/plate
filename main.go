@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
+	logPkg "log"
 	"os"
 	"os/user"
 	"path"
@@ -20,6 +20,26 @@ const (
 	templatesExtension = ".tpl"
 	templatesFolder    = ".plates"
 )
+
+var log = logger{
+	verbose: true,
+	logger:  logPkg.New(os.Stderr, "", 0),
+}
+
+func (l logger) Printf(f string, v ...interface{}) {
+	if l.verbose {
+		l.logger.Printf(f, v...)
+	}
+}
+
+func (l logger) Fatalf(f string, v ...interface{}) {
+	l.logger.Fatalf(f, v...)
+}
+
+type logger struct {
+	verbose bool
+	logger  *logPkg.Logger
+}
 
 type plate struct {
 	srcPath string
@@ -52,7 +72,7 @@ func (p *plate) ask(name string) string {
 	r := bufio.NewReader(os.Stdin)
 	val, err := r.ReadString('\n')
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("%v", err)
 	}
 
 	val = strings.TrimSpace(val)
@@ -116,7 +136,7 @@ func (p *plate) availableTemplates() []string {
 	pattern := path.Join(p.srcPath, fmt.Sprintf("*%s", templatesExtension))
 	paths, err := filepath.Glob(pattern)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("%v", err)
 	}
 
 	var names []string
@@ -124,7 +144,7 @@ func (p *plate) availableTemplates() []string {
 	for _, path := range paths {
 		name, err := filepath.Rel(p.srcPath, path)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("%v", err)
 		}
 
 		names = append(names, name[0:len(name)-len(templatesExtension)])
@@ -149,7 +169,7 @@ func (p *plate) execute(name string, args ...string) error {
 				return err
 			}
 
-			fmt.Printf("Creating file %s\n", path)
+			log.Printf("Creating file %s\n", path)
 			f, err := os.Create(path)
 			if err != nil {
 				return err
@@ -200,7 +220,7 @@ func main() {
 
 	usr, err := user.Current()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("%v", err)
 	}
 
 	templatesPath := path.Join(usr.HomeDir, templatesFolder)
@@ -217,6 +237,6 @@ func main() {
 	name := chooseTemplate(p)
 	err = p.execute(name, args...)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("%v", err)
 	}
 }
